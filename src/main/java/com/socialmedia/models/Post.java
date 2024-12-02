@@ -24,4 +24,7 @@ public class Post {
     public Timestamp getTimestamp() { return timestamp; }
     public int getLikeCount() { return likeCount; }
     public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+    public void setContent(String content) {
+        this.content = content;
+    }
 } 

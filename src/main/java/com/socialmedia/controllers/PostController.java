@@ -98,4 +98,56 @@ public class PostController {
             post.setLikeCount(rs.getInt("LikeCount"));
         }
     }
+
+    public boolean isPostOwner(int postId, int userId) {
+        try {
+            String query = "SELECT UserID FROM posts WHERE PostID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, postId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("UserID") == userId;
+            }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deletePost(int postId) {
+        try {
+            String sql = "{CALL DeletePost(?)}";
+            CallableStatement stmt = dbController.getConnection().prepareCall(sql);
+            stmt.setInt(1, postId);
+
+            int rowsAffected = stmt.executeUpdate();
+            dbController.commit();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            dbController.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updatePost(int postId, String content) {
+        try {
+            String sql = "{CALL UpdatePost(?, ?, ?, ?)}";
+            CallableStatement stmt = dbController.getConnection().prepareCall(sql);
+            stmt.setInt(1, postId);
+            stmt.setString(2, content);
+            stmt.setString(3, "text");  // Default to text type
+            stmt.setString(4, null);    // No media URL
+
+            stmt.execute();
+            dbController.commit();
+            return true;
+        } catch (SQLException e) {
+            dbController.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
 } 

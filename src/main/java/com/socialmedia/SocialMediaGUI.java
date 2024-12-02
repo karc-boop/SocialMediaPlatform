@@ -22,9 +22,6 @@ public class SocialMediaGUI extends Application {
     private final PostController postController = PostController.getInstance();
     private final CommentController commentController = CommentController.getInstance();
     private final FriendController friendController = FriendController.getInstance();
-    private final MessageController messageController = MessageController.getInstance();
-
-    private VBox postsContainer;
 
     @Override
     public void start(Stage primaryStage) {
@@ -152,38 +149,31 @@ public class SocialMediaGUI extends Application {
         VBox postsLayout = new VBox(10);
         postsLayout.setPadding(new Insets(10));
 
+        // Posts list with scroll functionality
+        VBox postsListView = new VBox(10);
+        ScrollPane scrollPane = new ScrollPane(postsListView);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(400);
+        scrollPane.setStyle("-fx-background-color: transparent;");
+
         // Create post section
         TextArea newPostContent = new TextArea();
         newPostContent.setPromptText("What's on your mind?");
         newPostContent.setPrefRowCount(3);
-        newPostContent.setPrefWidth(600); // Set preferred width
-        newPostContent.setWrapText(true); // Enable text wrapping
+        newPostContent.setPrefWidth(600);
         
         Button createPostButton = new Button("Create Post");
         createPostButton.setOnAction(e -> {
-            String content = newPostContent.getText().trim();
-            if (!content.isEmpty()) {
-                if (postController.createPost(userController.getCurrentUser().getUserId(), content)) {
-                    newPostContent.clear();
-                    refreshPosts(postsContainer); // Use the class field instead
-                }
-            } else {
-                DialogFactory.showAlert(Alert.AlertType.WARNING, 
-                    "Warning", "Post content cannot be empty!");
+            if (postController.createPost(userController.getCurrentUser().getUserId(), 
+                                       newPostContent.getText())) {
+                newPostContent.clear();
+                refreshPosts(postsListView);
             }
         });
 
-        // Create a container for posts that will persist
-        postsContainer = new VBox(10); // Make this a class field
-        ScrollPane scrollPane = new ScrollPane(postsContainer);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefViewportHeight(400); // Set a preferred height
-        
-        // Refresh button
         Button refreshButton = new Button("Refresh Posts");
-        refreshButton.setOnAction(e -> refreshPosts(postsContainer));
+        refreshButton.setOnAction(e -> refreshPosts(postsListView));
 
-        // Add all components to the layout
         postsLayout.getChildren().addAll(
             new Label("Create New Post"),
             newPostContent,
@@ -194,8 +184,7 @@ public class SocialMediaGUI extends Application {
             refreshButton
         );
 
-        // Initial load of posts
-        refreshPosts(postsContainer);
+        refreshPosts(postsListView);
         return postsLayout;
     }
 
@@ -203,16 +192,9 @@ public class SocialMediaGUI extends Application {
         postsListView.getChildren().clear();
         List<Post> posts = postController.loadPosts(userController.getCurrentUser().getUserId());
         
-        if (posts.isEmpty()) {
-            Label noPostsLabel = new Label("No posts to show");
-            noPostsLabel.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
-            postsListView.getChildren().add(noPostsLabel);
-        } else {
-            for (Post post : posts) {
-                PostView postView = new PostView(post);
-                postView.setMaxWidth(Double.MAX_VALUE); // Make post view use full width
-                postsListView.getChildren().add(postView);
-            }
+        for (Post post : posts) {
+            PostView postView = new PostView(post);
+            postsListView.getChildren().add(postView);
         }
     }
 
@@ -233,15 +215,13 @@ public class SocialMediaGUI extends Application {
             if (!friendUsername.isEmpty()) {
                 User friend = userController.getUserByUsername(friendUsername);
                 if (friend != null) {
-                    if (friendController.sendFriendRequest(
+                    if (friendController.addFriend(
                             userController.getCurrentUser().getUserId(), 
                             friend.getUserId())) {
                         DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
-                            "Success", "Friend request sent successfully!");
+                            "Success", "Friend added successfully!");
+                        refreshFriendsList(friendsListView);
                         friendUsernameField.clear();
-                    } else {
-                        DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                            "Error", "Friend request already sent or other error occurred!");
                     }
                 } else {
                     DialogFactory.showAlert(Alert.AlertType.ERROR, 
@@ -313,9 +293,8 @@ public class SocialMediaGUI extends Application {
         VBox messagesLayout = new VBox(10);
         messagesLayout.setPadding(new Insets(10));
 
-        // Messages list with better formatting
-        ListView<VBox> messagesListView = new ListView<>();
-        messagesListView.setPrefHeight(300);
+        // Messages list
+        ListView<String> messagesListView = new ListView<>();
         
         // Send message section
         TextField recipientField = new TextField();
@@ -324,7 +303,6 @@ public class SocialMediaGUI extends Application {
         TextArea messageContent = new TextArea();
         messageContent.setPromptText("Type your message");
         messageContent.setPrefRowCount(3);
-        messageContent.setWrapText(true);
         
         Button sendButton = new Button("Send Message");
         sendButton.setOnAction(e -> {
@@ -334,21 +312,12 @@ public class SocialMediaGUI extends Application {
             if (!recipient.isEmpty() && !content.isEmpty()) {
                 User recipientUser = userController.getUserByUsername(recipient);
                 if (recipientUser != null) {
-                    if (messageController.sendMessage(
-                            userController.getCurrentUser().getUserId(),
-                            recipientUser.getUserId(),
-                            content)) {
-                        DialogFactory.showAlert(Alert.AlertType.INFORMATION,
-                            "Success", "Message sent successfully!");
-                        messageContent.clear();
-                        recipientField.clear();
-                        refreshMessages(messagesListView);
-                    } else {
-                        DialogFactory.showAlert(Alert.AlertType.ERROR,
-                            "Error", "Failed to send message!");
-                    }
+                    // TODO: Implement MessageController and add message sending logic
+                    messageContent.clear();
+                    recipientField.clear();
+                    refreshMessages(messagesListView);
                 } else {
-                    DialogFactory.showAlert(Alert.AlertType.ERROR,
+                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
                         "Error", "Recipient not found!");
                 }
             }
@@ -372,109 +341,41 @@ public class SocialMediaGUI extends Application {
         return messagesLayout;
     }
 
-    private void refreshMessages(ListView<VBox> messagesListView) {
+    private void refreshMessages(ListView<String> messagesListView) {
+        // TODO: Implement MessageController and add message loading logic
         messagesListView.getItems().clear();
-        List<Message> messages = messageController.loadMessages(userController.getCurrentUser().getUserId());
-        
-        if (messages.isEmpty()) {
-            VBox noMessagesBox = new VBox();
-            Label noMessagesLabel = new Label("No messages to show");
-            noMessagesLabel.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
-            noMessagesBox.getChildren().add(noMessagesLabel);
-            messagesListView.getItems().add(noMessagesBox);
-        } else {
-            for (Message message : messages) {
-                VBox messageBox = new VBox(5);
-                messageBox.setStyle("-fx-padding: 5; -fx-background-color: #f8f8f8;");
-                
-                Label senderLabel = new Label("From: " + message.getSenderUsername());
-                senderLabel.setStyle("-fx-font-weight: bold");
-                
-                Label timeLabel = new Label(message.getTimestamp().toString());
-                timeLabel.setStyle("-fx-font-size: 0.8em; -fx-text-fill: #666666;");
-                
-                Label contentLabel = new Label(message.getContent());
-                contentLabel.setWrapText(true);
-                
-                messageBox.getChildren().addAll(senderLabel, timeLabel, contentLabel);
-                messagesListView.getItems().add(messageBox);
-            }
-        }
     }
 
     private VBox createNotificationsTab() {
         VBox notificationsLayout = new VBox(10);
         notificationsLayout.setPadding(new Insets(10));
 
-        // Friend requests list
-        ListView<VBox> requestsListView = new ListView<>();
-        requestsListView.setPrefHeight(300);
-
+        // Notifications list
+        ListView<String> notificationsListView = new ListView<>();
+        
         Button refreshButton = new Button("Refresh Notifications");
-        refreshButton.setOnAction(e -> refreshNotifications(requestsListView));
+        refreshButton.setOnAction(e -> refreshNotifications(notificationsListView));
+
+        Button markAllReadButton = new Button("Mark All as Read");
+        markAllReadButton.setOnAction(e -> {
+            // TODO: Implement NotificationController and add mark-as-read logic
+            refreshNotifications(notificationsListView);
+        });
 
         notificationsLayout.getChildren().addAll(
-            new Label("Friend Requests"),
-            requestsListView,
-            refreshButton
+            new Label("Notifications"),
+            notificationsListView,
+            refreshButton,
+            markAllReadButton
         );
 
-        refreshNotifications(requestsListView);
+        refreshNotifications(notificationsListView);
         return notificationsLayout;
     }
 
-    private void refreshNotifications(ListView<VBox> requestsListView) {
-        requestsListView.getItems().clear();
-        List<FriendRequest> requests = friendController.getPendingRequests(
-            userController.getCurrentUser().getUserId());
-        
-        if (requests.isEmpty()) {
-            VBox noRequestsBox = new VBox();
-            Label noRequestsLabel = new Label("No pending friend requests");
-            noRequestsLabel.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
-            noRequestsBox.getChildren().add(noRequestsLabel);
-            requestsListView.getItems().add(noRequestsBox);
-        } else {
-            for (FriendRequest request : requests) {
-                VBox requestBox = createFriendRequestBox(request, requestsListView);
-                requestsListView.getItems().add(requestBox);
-            }
-        }
-    }
-
-    private VBox createFriendRequestBox(FriendRequest request, ListView<VBox> requestsListView) {
-        VBox requestBox = new VBox(5);
-        requestBox.setStyle("-fx-padding: 10; -fx-background-color: #f8f8f8;");
-
-        Label senderLabel = new Label("Friend request from: " + request.getSenderUsername());
-        senderLabel.setStyle("-fx-font-weight: bold");
-
-        Label timeLabel = new Label(request.getTimestamp().toString());
-        timeLabel.setStyle("-fx-font-size: 0.8em; -fx-text-fill: #666666;");
-
-        HBox buttonBox = new HBox(10);
-        Button acceptButton = new Button("Accept");
-        Button declineButton = new Button("Decline");
-
-        acceptButton.setOnAction(e -> {
-            if (friendController.respondToFriendRequest(request.getRequestId(), true)) {
-                DialogFactory.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "Friend request accepted!");
-                refreshNotifications(requestsListView);
-            }
-        });
-
-        declineButton.setOnAction(e -> {
-            if (friendController.respondToFriendRequest(request.getRequestId(), false)) {
-                DialogFactory.showAlert(Alert.AlertType.INFORMATION,
-                    "Success", "Friend request declined!");
-                refreshNotifications(requestsListView);
-            }
-        });
-
-        buttonBox.getChildren().addAll(acceptButton, declineButton);
-        requestBox.getChildren().addAll(senderLabel, timeLabel, buttonBox);
-        return requestBox;
+    private void refreshNotifications(ListView<String> notificationsListView) {
+        // TODO: Implement NotificationController and add notification loading logic
+        notificationsListView.getItems().clear();
     }
 
     private void logout() {
@@ -574,12 +475,7 @@ public class SocialMediaGUI extends Application {
                     DialogFactory.showAlert(Alert.AlertType.INFORMATION,
                         "Success", "Profile updated successfully!");
                     // Refresh the profile tab
-                    TabPane tabPane = (TabPane) mainScene.getRoot().getChildrenUnmodifiable().get(0);
-                    Tab profileTab = tabPane.getTabs().get(0);
-                    profileTab.setContent(createProfileTab());
-                } else {
-                    DialogFactory.showAlert(Alert.AlertType.ERROR,
-                        "Error", "Failed to update profile!");
+                    createProfileTab();
                 }
             }
         });
