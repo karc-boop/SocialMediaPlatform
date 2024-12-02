@@ -1,0 +1,15 @@
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/DatabaseController.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/PostController.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/ui/DialogFactory.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/Post.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/User.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/MessageController.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/ui/CommentView.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/Message.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/Comment.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/CommentController.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/UserController.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/ui/PostView.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/FriendRequest.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/SocialMediaGUI.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/controllers/FriendController.java
