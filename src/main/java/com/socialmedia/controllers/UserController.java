@@ -156,4 +156,28 @@ public class UserController {
             return false;
         }
     }
+
+    public User getUserById(int userId) {
+        try {
+            String query = "SELECT UserID, Username, Email, Name, Bio, ProfilePicture FROM users WHERE UserID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(
+                    rs.getInt("UserID"),
+                    rs.getString("Username"),
+                    rs.getString("Email"),
+                    rs.getString("Name"),
+                    rs.getString("Bio"),
+                    rs.getString("ProfilePicture")
+                );
+            }
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 } 
