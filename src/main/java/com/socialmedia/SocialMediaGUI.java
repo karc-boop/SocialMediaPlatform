@@ -164,20 +164,59 @@ public class SocialMediaGUI extends Application {
         
         Button createPostButton = new Button("Create Post");
         createPostButton.setOnAction(e -> {
-            if (postController.createPost(userController.getCurrentUser().getUserId(), 
-                                       newPostContent.getText())) {
-                newPostContent.clear();
-                refreshPosts(postsListView);
+            String content = newPostContent.getText().trim();
+            if (!content.isEmpty()) {
+                if (postController.createPost(userController.getCurrentUser().getUserId(), content)) {
+                    newPostContent.clear();  // Clear the input
+                    refreshPosts(postsListView);  // Refresh the posts list
+                    DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
+                        "Success", "Post created successfully!");
+                } else {
+                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                        "Error", "Failed to create post!");
+                }
+            } else {
+                DialogFactory.showAlert(Alert.AlertType.WARNING, 
+                    "Warning", "Post content cannot be empty!");
             }
         });
 
         Button refreshButton = new Button("Refresh Posts");
         refreshButton.setOnAction(e -> refreshPosts(postsListView));
 
+        // Add hashtag search
+        HBox searchBox = new HBox(10);
+        TextField hashtagField = new TextField();
+        hashtagField.setPromptText("Search by hashtag (without #)");
+        Button searchButton = new Button("Search");
+        Button clearSearchButton = new Button("Clear Search");
+        
+        searchButton.setOnAction(e -> {
+            String tag = hashtagField.getText().trim();
+            if (!tag.isEmpty()) {
+                postsListView.getChildren().clear();
+                List<Post> posts = postController.searchPostsByHashtag(tag);
+                for (Post post : posts) {
+                    PostView postView = new PostView(post);
+                    postsListView.getChildren().add(postView);
+                }
+            }
+        });
+        
+        clearSearchButton.setOnAction(e -> {
+            hashtagField.clear();
+            refreshPosts(postsListView);
+        });
+        
+        searchBox.getChildren().addAll(hashtagField, searchButton, clearSearchButton);
+
         postsLayout.getChildren().addAll(
             new Label("Create New Post"),
             newPostContent,
             createPostButton,
+            new Separator(),
+            new Label("Search Posts"),
+            searchBox,
             new Separator(),
             new Label("Recent Posts"),
             scrollPane,

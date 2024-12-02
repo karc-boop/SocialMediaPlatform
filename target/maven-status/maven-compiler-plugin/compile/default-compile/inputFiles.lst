@@ -6,6 +6,7 @@
 /Users/caijiawen/database/src/main/java/com/socialmedia/controllers/MessageController.java
 /Users/caijiawen/database/src/main/java/com/socialmedia/ui/CommentView.java
 /Users/caijiawen/database/src/main/java/com/socialmedia/models/Message.java
+/Users/caijiawen/database/src/main/java/com/socialmedia/models/Hashtag.java
 /Users/caijiawen/database/src/main/java/com/socialmedia/models/Comment.java
 /Users/caijiawen/database/src/main/java/com/socialmedia/controllers/CommentController.java
 /Users/caijiawen/database/src/main/java/com/socialmedia/controllers/UserController.java
