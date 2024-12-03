@@ -134,12 +134,16 @@ public class SocialMediaGUI extends Application {
         Button updateProfileButton = new Button("Update Profile");
         updateProfileButton.setOnAction(e -> showUpdateProfileDialog());
 
+        Button settingsButton = new Button("Settings");
+        settingsButton.setOnAction(e -> new ProfileSettingsDialog(userController.getCurrentUser().getUserId()).showAndWait());
+
         profileLayout.getChildren().addAll(
             new Label("Profile Information"),
             nameLabel,
             emailLabel,
             bioLabel,
-            updateProfileButton
+            updateProfileButton,
+            settingsButton
         );
 
         return profileLayout;
@@ -241,6 +245,47 @@ public class SocialMediaGUI extends Application {
         VBox friendsLayout = new VBox(10);
         friendsLayout.setPadding(new Insets(10));
         
+        // Add friend section
+        HBox addFriendBox = new HBox(10);
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Enter username to add");
+        Button addFriendButton = new Button("Add Friend");
+        addFriendBox.getChildren().addAll(usernameField, addFriendButton);
+        
+        // Add friend button action
+        addFriendButton.setOnAction(e -> {
+            String username = usernameField.getText().trim();
+            if (!username.isEmpty()) {
+                User userToAdd = userController.getUserByUsername(username);
+                if (userToAdd != null) {
+                    if (friendController.sendFriendRequest(
+                        userController.getCurrentUser().getUserId(), 
+                        userToAdd.getUserId())) {
+                        DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
+                            "Success", "Friend request sent!");
+                        usernameField.clear();
+                    } else {
+                        DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                            "Error", "Failed to send friend request!");
+                    }
+                } else {
+                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                        "Error", "User not found!");
+                }
+            }
+        });
+        
+        // Friend requests section
+        ListView<FriendRequest> requestsListView = new ListView<>();
+        requestsListView.setCellFactory(lv -> new FriendRequestCell());
+        
+        // Load pending friend requests
+        List<FriendRequest> pendingRequests = friendController.getPendingRequests(
+            userController.getCurrentUser().getUserId()
+        );
+        requestsListView.getItems().addAll(pendingRequests);
+        
+        // Friends list view
         ListView<User> friendsListView = new ListView<>();
         friendsListView.setCellFactory(lv -> new FriendListCell());
         
@@ -249,15 +294,25 @@ public class SocialMediaGUI extends Application {
         friendsListView.getItems().addAll(friends);
         
         // Add refresh button
-        Button refreshButton = new Button("Refresh Friends List");
+        Button refreshButton = new Button("Refresh");
         refreshButton.setOnAction(e -> {
             friendsListView.getItems().clear();
             friendsListView.getItems().addAll(
                 friendController.getFriends(userController.getCurrentUser().getUserId())
             );
+            requestsListView.getItems().clear();
+            requestsListView.getItems().addAll(
+                friendController.getPendingRequests(userController.getCurrentUser().getUserId())
+            );
         });
         
         friendsLayout.getChildren().addAll(
+            new Label("Add Friend"),
+            addFriendBox,
+            new Separator(),
+            new Label("Friend Requests"),
+            requestsListView,
+            new Separator(),
             new Label("Your Friends"),
             friendsListView,
             refreshButton

@@ -1,6 +1,8 @@
 package com.socialmedia.controllers;
 
 import com.socialmedia.models.User;
+import com.socialmedia.models.UserSettings;
+import com.socialmedia.models.PrivacyLevel;
 import java.sql.*;
 
 public class UserController {
@@ -50,7 +52,7 @@ public class UserController {
     public boolean registerUser(String username, String email, String password, String name, String bio, String profilePicture) {
         try {
             String sql = "INSERT INTO users (Username, Email, PasswordHash, Name, Bio, ProfilePicture) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             
             stmt.setString(1, username);
             stmt.setString(2, email);
@@ -61,6 +63,14 @@ public class UserController {
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
+                ResultSet generatedKeys = stmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int userId = generatedKeys.getInt(1);
+                    String settingsSql = "INSERT INTO user_settings (UserID, NotificationsEnabled, PrivacyLevel) VALUES (?, 1, 'PUBLIC')";
+                    PreparedStatement settingsStmt = dbController.getConnection().prepareStatement(settingsSql);
+                    settingsStmt.setInt(1, userId);
+                    settingsStmt.executeUpdate();
+                }
                 dbController.commit();
                 return true;
             }
@@ -178,6 +188,42 @@ public class UserController {
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public UserSettings getUserSettings(int userId) {
+        try {
+            String query = "SELECT * FROM user_settings WHERE UserID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new UserSettings(
+                    rs.getInt("SettingID"),
+                    rs.getInt("UserID"),
+                    rs.getBoolean("NotificationsEnabled"),
+                    PrivacyLevel.valueOf(rs.getString("PrivacyLevel"))
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateUserSettings(UserSettings settings) {
+        try {
+            String query = "UPDATE user_settings SET NotificationsEnabled = ?, PrivacyLevel = ? WHERE UserID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setBoolean(1, settings.isNotificationsEnabled());
+            stmt.setString(2, settings.getPrivacyLevel().name());
+            stmt.setInt(3, settings.getUserId());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
