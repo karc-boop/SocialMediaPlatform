@@ -99,6 +99,22 @@ public class PostController {
 
     public boolean likePost(int postId, int userId) {
         try {
+            dbController.getConnection().setAutoCommit(false);
+            
+            // First check if user already liked the post
+            String checkSql = "SELECT LikeID FROM post_likes WHERE PostID = ? AND UserID = ?";
+            PreparedStatement checkStmt = dbController.getConnection().prepareStatement(checkSql);
+            checkStmt.setInt(1, postId);
+            checkStmt.setInt(2, userId);
+            ResultSet rs = checkStmt.executeQuery();
+            
+            if (rs.next()) {
+                // User already liked this post
+                dbController.rollback();
+                return false;
+            }
+
+            // Add the like
             String sql = "{CALL AddPostLike(?, ?)}";
             CallableStatement stmt = dbController.getConnection().prepareCall(sql);
             stmt.setInt(1, postId);
@@ -114,7 +130,7 @@ public class PostController {
         }
     }
 
-    private void updatePostLikeCount(Post post) throws SQLException {
+    public void updatePostLikeCount(Post post) throws SQLException {
         String query = "SELECT COUNT(*) as LikeCount FROM post_likes WHERE PostID = ?";
         PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
         stmt.setInt(1, post.getPostId());
@@ -278,5 +294,35 @@ public class PostController {
             e.printStackTrace();
         }
         return posts;
+    }
+
+    public boolean sharePost(int postId, int userId) {
+        try {
+            String sql = "{CALL SharePost(?, ?)}";
+            CallableStatement stmt = dbController.getConnection().prepareCall(sql);
+            stmt.setInt(1, postId);
+            stmt.setInt(2, userId);
+
+            stmt.execute();
+            dbController.commit();
+            return true;
+        } catch (SQLException e) {
+            dbController.rollback();
+            System.out.println("Error sharing post: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int getShareCount(int postId) throws SQLException {
+        String query = "SELECT COUNT(*) as ShareCount FROM shares WHERE PostID = ?";
+        PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+        stmt.setInt(1, postId);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return rs.getInt("ShareCount");
+        }
+        return 0;
     }
 } 

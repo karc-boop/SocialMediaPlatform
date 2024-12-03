@@ -404,8 +404,8 @@ public class SocialMediaGUI extends Application {
         notificationsLayout.getChildren().addAll(
             new Label("Notifications"),
             notificationsListView,
-            refreshButton,
-            markAllReadButton
+            markAllReadButton,
+            refreshButton
         );
 
         refreshNotifications(notificationsListView);

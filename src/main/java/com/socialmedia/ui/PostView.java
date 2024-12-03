@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.control.*;
 import javafx.geometry.Insets;
 import java.util.List;
+import java.sql.SQLException;
 
 public class PostView extends VBox {
     private Post post;
@@ -76,6 +77,48 @@ public class PostView extends VBox {
         // Like section
         likeCountLabel = new Label("Likes: " + post.getLikeCount());
         Button likeButton = new Button("Like");
+        likeButton.setOnAction(e -> {
+            if (postController.likePost(post.getPostId(), userController.getCurrentUser().getUserId())) {
+                // Update like count immediately after successful like
+                try {
+                    postController.updatePostLikeCount(post);
+                    likeCountLabel.setText("Likes: " + post.getLikeCount());
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                        "Error", "Failed to update like count");
+                }
+            } else {
+                DialogFactory.showAlert(Alert.AlertType.WARNING, 
+                    "Warning", "You have already liked this post");
+            }
+        });
+        
+        // Share section
+        Button shareButton = new Button("Share");
+        Label shareCountLabel = new Label("Shares: 0");
+        try {
+            shareCountLabel.setText("Shares: " + postController.getShareCount(post.getPostId()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        shareButton.setOnAction(e -> {
+            if (postController.sharePost(post.getPostId(), userController.getCurrentUser().getUserId())) {
+                try {
+                    shareCountLabel.setText("Shares: " + postController.getShareCount(post.getPostId()));
+                    DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
+                        "Success", "Post shared successfully!");
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                        "Error", "Failed to update share count");
+                }
+            } else {
+                DialogFactory.showAlert(Alert.AlertType.ERROR, 
+                    "Error", "Failed to share post");
+            }
+        });
         
         // Comment section
         commentsContainer = new VBox(5);
@@ -107,6 +150,8 @@ public class PostView extends VBox {
             contentLabel,
             likeButton, 
             likeCountLabel,
+            shareButton,
+            shareCountLabel,
             new Separator(), // Add a line between post and comments
             commentInputBox,
             commentsContainer
