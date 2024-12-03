@@ -8,7 +8,6 @@ import javafx.geometry.Insets;
 
 public class CommentView extends VBox {
     private Comment comment;
-    private Label likeCountLabel;
     private Runnable onDeleteAction;
     
     public CommentView(Comment comment, String currentUsername, String authorUsername, Runnable onDeleteAction) {
@@ -40,16 +39,6 @@ public class CommentView extends VBox {
         Label timeLabel = new Label(comment.getTimestamp().toString());
         timeLabel.setStyle("-fx-font-size: 0.8em; -fx-text-fill: #666666;");
 
-        // Like section
-        HBox likeBox = new HBox(10);
-        likeCountLabel = new Label("Likes: " + comment.getLikeCount());
-        Button likeButton = new Button("Like");
-        likeBox.getChildren().addAll(likeButton, likeCountLabel);
-
-        getChildren().addAll(header, contentLabel, timeLabel, likeBox);
-    }
-
-    public void updateLikeCount(int count) {
-        likeCountLabel.setText("Likes: " + count);
+        getChildren().addAll(header, contentLabel, timeLabel);
     }
 } 

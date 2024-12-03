@@ -8,7 +8,6 @@ public class Comment {
     private int userId;
     private String content;
     private Timestamp timestamp;
-    private int likeCount;
 
     // Constructor
     public Comment(int commentId, int postId, int userId, String content, Timestamp timestamp) {
@@ -25,6 +24,4 @@ public class Comment {
     public int getUserId() { return userId; }
     public String getContent() { return content; }
     public Timestamp getTimestamp() { return timestamp; }
-    public int getLikeCount() { return likeCount; }
-    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
 } 

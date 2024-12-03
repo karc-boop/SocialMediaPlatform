@@ -58,7 +58,6 @@ public class CommentController {
                     rs.getString("Content"),
                     rs.getTimestamp("Timestamp")
                 );
-                updateCommentLikeCount(comment);
                 comments.add(comment);
             }
         } catch (SQLException e) {
@@ -83,34 +82,6 @@ public class CommentController {
             dbController.rollback();
             e.printStackTrace();
             return false;
-        }
-    }
-
-    public boolean likeComment(int commentId, int userId) {
-        try {
-            String sql = "{CALL AddCommentLike(?, ?)}";
-            CallableStatement stmt = dbController.getConnection().prepareCall(sql);
-            stmt.setInt(1, commentId);
-            stmt.setInt(2, userId);
-
-            stmt.execute();
-            dbController.commit();
-            return true;
-        } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private void updateCommentLikeCount(Comment comment) throws SQLException {
-        String query = "SELECT COUNT(*) as LikeCount FROM comment_likes WHERE CommentID = ?";
-        PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
-        stmt.setInt(1, comment.getCommentId());
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            comment.setLikeCount(rs.getInt("LikeCount"));
         }
     }
 } 
