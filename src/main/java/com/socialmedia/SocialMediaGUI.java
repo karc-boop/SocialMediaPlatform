@@ -382,15 +382,17 @@ public class SocialMediaGUI extends Application {
         VBox notificationsLayout = new VBox(10);
         notificationsLayout.setPadding(new Insets(10));
 
-        // Notifications list
-        ListView<String> notificationsListView = new ListView<>();
+        ListView<Notification> notificationsListView = new ListView<>();
+        notificationsListView.setCellFactory(lv -> new NotificationCell());
         
         Button refreshButton = new Button("Refresh Notifications");
         refreshButton.setOnAction(e -> refreshNotifications(notificationsListView));
 
         Button markAllReadButton = new Button("Mark All as Read");
         markAllReadButton.setOnAction(e -> {
-            // TODO: Implement NotificationController and add mark-as-read logic
+            NotificationController.getInstance().markAllAsRead(
+                userController.getCurrentUser().getUserId()
+            );
             refreshNotifications(notificationsListView);
         });
 
@@ -405,9 +407,13 @@ public class SocialMediaGUI extends Application {
         return notificationsLayout;
     }
 
-    private void refreshNotifications(ListView<String> notificationsListView) {
-        // TODO: Implement NotificationController and add notification loading logic
+    private void refreshNotifications(ListView<Notification> notificationsListView) {
         notificationsListView.getItems().clear();
+        notificationsListView.getItems().addAll(
+            NotificationController.getInstance().getAllNotifications(
+                userController.getCurrentUser().getUserId()
+            )
+        );
     }
 
     private void logout() {
