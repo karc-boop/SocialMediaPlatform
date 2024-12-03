@@ -25,6 +25,13 @@ public class PostController {
     }
 
     public boolean createPost(int userId, String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("Post content cannot be empty");
+        }
+        if (content.length() > 1000) {  // Example character limit
+            throw new IllegalArgumentException("Post content exceeds 1000 characters");
+        }
+        
         try {
             dbController.getConnection().setAutoCommit(false);
             
@@ -60,8 +67,10 @@ public class PostController {
             return false;
         } catch (SQLException e) {
             dbController.rollback();
-            e.printStackTrace();
-            return false;
+            if (e.getMessage().contains("foreign key")) {
+                throw new IllegalStateException("User does not exist");
+            }
+            throw new RuntimeException("Database error while creating post: " + e.getMessage());
         }
     }
 
@@ -298,6 +307,27 @@ public class PostController {
 
     public boolean sharePost(int postId, int userId) {
         try {
+            // First check if post exists
+            String checkSql = "SELECT PostID FROM posts WHERE PostID = ?";
+            PreparedStatement checkStmt = dbController.getConnection().prepareStatement(checkSql);
+            checkStmt.setInt(1, postId);
+            ResultSet rs = checkStmt.executeQuery();
+            
+            if (!rs.next()) {
+                throw new IllegalArgumentException("Post does not exist");
+            }
+            
+            // Check if already shared
+            String checkShareSql = "SELECT ShareID FROM shares WHERE PostID = ? AND UserID = ?";
+            PreparedStatement checkShareStmt = dbController.getConnection().prepareStatement(checkShareSql);
+            checkShareStmt.setInt(1, postId);
+            checkShareStmt.setInt(2, userId);
+            ResultSet shareRs = checkShareStmt.executeQuery();
+            
+            if (shareRs.next()) {
+                throw new IllegalStateException("You have already shared this post");
+            }
+
             String sql = "{CALL SharePost(?, ?)}";
             CallableStatement stmt = dbController.getConnection().prepareCall(sql);
             stmt.setInt(1, postId);
@@ -308,9 +338,7 @@ public class PostController {
             return true;
         } catch (SQLException e) {
             dbController.rollback();
-            System.out.println("Error sharing post: " + e.getMessage());
-            e.printStackTrace();
-            return false;
+            throw new RuntimeException("Error sharing post: " + e.getMessage());
         }
     }
 

@@ -104,19 +104,22 @@ public class PostView extends VBox {
         }
         
         shareButton.setOnAction(e -> {
-            if (postController.sharePost(post.getPostId(), userController.getCurrentUser().getUserId())) {
-                try {
+            try {
+                if (postController.sharePost(post.getPostId(), userController.getCurrentUser().getUserId())) {
                     shareCountLabel.setText("Shares: " + postController.getShareCount(post.getPostId()));
                     DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
                         "Success", "Post shared successfully!");
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                        "Error", "Failed to update share count");
                 }
-            } else {
+            } catch (IllegalArgumentException ex) {
+                DialogFactory.showAlert(Alert.AlertType.WARNING, 
+                    "Invalid Operation", ex.getMessage());
+            } catch (IllegalStateException ex) {
+                DialogFactory.showAlert(Alert.AlertType.WARNING, 
+                    "Already Shared", ex.getMessage());
+            } catch (Exception ex) {
                 DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                    "Error", "Failed to share post");
+                    "Error", "An unexpected error occurred: " + ex.getMessage());
+                ex.printStackTrace();
             }
         });
         

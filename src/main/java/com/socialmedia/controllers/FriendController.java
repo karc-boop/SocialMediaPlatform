@@ -214,4 +214,70 @@ public class FriendController {
         }
         return requests;
     }
+
+    public int getSharedFriendsCount(int userId1, int userId2) {
+        try {
+            String query = """
+                SELECT COUNT(*) as shared_count
+                FROM friendships f1
+                JOIN friendships f2 ON (
+                    f1.UserID2 = f2.UserID2 OR 
+                    f1.UserID2 = f2.UserID1 OR 
+                    f1.UserID1 = f2.UserID2
+                )
+                WHERE 
+                    ((f1.UserID1 = ? AND f2.UserID1 = ?) OR 
+                     (f1.UserID1 = ? AND f2.UserID2 = ?))
+                    AND f1.UserID2 != ? 
+                    AND f1.UserID2 != ?
+                """;
+                
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, userId1);
+            stmt.setInt(2, userId2);
+            stmt.setInt(3, userId1);
+            stmt.setInt(4, userId2);
+            stmt.setInt(5, userId1);
+            stmt.setInt(6, userId2);
+            
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("shared_count");
+            }
+            return 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public List<User> getFriends(int userId) {
+        List<User> friends = new ArrayList<>();
+        try {
+            String query = """
+                SELECT u.* FROM users u
+                JOIN friendships f ON (u.UserID = f.UserID1 OR u.UserID = f.UserID2)
+                WHERE (f.UserID1 = ? OR f.UserID2 = ?) AND u.UserID != ?
+            """;
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+            stmt.setInt(3, userId);
+            
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                friends.add(new User(
+                    rs.getInt("UserID"),
+                    rs.getString("Username"),
+                    rs.getString("Email"),
+                    rs.getString("Name"),
+                    rs.getString("Bio"),
+                    rs.getString("ProfilePicture")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return friends;
+    }
 } 

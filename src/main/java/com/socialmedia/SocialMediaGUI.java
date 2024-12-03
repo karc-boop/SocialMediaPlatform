@@ -240,92 +240,30 @@ public class SocialMediaGUI extends Application {
     private VBox createFriendsTab() {
         VBox friendsLayout = new VBox(10);
         friendsLayout.setPadding(new Insets(10));
-
-        // Friends list
-        ListView<String> friendsListView = new ListView<>();
-
-        // Add friend section
-        TextField friendUsernameField = new TextField();
-        friendUsernameField.setPromptText("Enter username to add");
-        Button addFriendButton = new Button("Add Friend");
-
-        addFriendButton.setOnAction(e -> {
-            String friendUsername = friendUsernameField.getText().trim();
-            if (!friendUsername.isEmpty()) {
-                User friend = userController.getUserByUsername(friendUsername);
-                if (friend != null) {
-                    if (friendController.addFriend(
-                            userController.getCurrentUser().getUserId(), 
-                            friend.getUserId())) {
-                        DialogFactory.showAlert(Alert.AlertType.INFORMATION, 
-                            "Success", "Friend added successfully!");
-                        refreshFriendsList(friendsListView);
-                        friendUsernameField.clear();
-                    }
-                } else {
-                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                        "Error", "User not found!");
-                }
-            }
-        });
-
-        // Remove friend section
-        Button removeFriendButton = new Button("Remove Selected Friend");
-        removeFriendButton.setDisable(true);
-
-        friendsListView.getSelectionModel().selectedItemProperty().addListener(
-            (observable, oldValue, newValue) -> removeFriendButton.setDisable(newValue == null)
-        );
-
-        removeFriendButton.setOnAction(e -> {
-            String selectedFriend = friendsListView.getSelectionModel().getSelectedItem();
-            if (selectedFriend != null) {
-                String username = selectedFriend.split(" \\(")[0];
-                User friend = userController.getUserByUsername(username);
-                
-                if (DialogFactory.showConfirmation("Remove Friend", 
-                        "Remove Friend", 
-                        "Are you sure you want to remove " + username + " from your friends list?")) {
-                    if (friendController.removeFriend(
-                            userController.getCurrentUser().getUserId(), 
-                            friend.getUserId())) {
-                        refreshFriendsList(friendsListView);
-                    }
-                }
-            }
-        });
-
-        // Refresh button
-        Button refreshButton = new Button("Refresh Friends List");
-        refreshButton.setOnAction(e -> refreshFriendsList(friendsListView));
-
-        // Status label
-        Label statusLabel = new Label();
-
-        friendsLayout.getChildren().addAll(
-            new Label("Add Friend"),
-            friendUsernameField,
-            addFriendButton,
-            new Separator(),
-            new Label("My Friends"),
-            friendsListView,
-            removeFriendButton,
-            refreshButton,
-            statusLabel
-        );
-
-        refreshFriendsList(friendsListView);
-        return friendsLayout;
-    }
-
-    private void refreshFriendsList(ListView<String> friendsListView) {
-        friendsListView.getItems().clear();
-        List<User> friends = friendController.loadFriends(userController.getCurrentUser().getUserId());
         
-        for (User friend : friends) {
-            String friendDisplay = String.format("%s (%s)", friend.getUsername(), friend.getName());
-            friendsListView.getItems().add(friendDisplay);
-        }
+        ListView<User> friendsListView = new ListView<>();
+        friendsListView.setCellFactory(lv -> new FriendListCell());
+        
+        // Load friends
+        List<User> friends = friendController.getFriends(userController.getCurrentUser().getUserId());
+        friendsListView.getItems().addAll(friends);
+        
+        // Add refresh button
+        Button refreshButton = new Button("Refresh Friends List");
+        refreshButton.setOnAction(e -> {
+            friendsListView.getItems().clear();
+            friendsListView.getItems().addAll(
+                friendController.getFriends(userController.getCurrentUser().getUserId())
+            );
+        });
+        
+        friendsLayout.getChildren().addAll(
+            new Label("Your Friends"),
+            friendsListView,
+            refreshButton
+        );
+        
+        return friendsLayout;
     }
 
     private VBox createMessagesTab() {
