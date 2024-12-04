@@ -2,6 +2,7 @@ package com.socialmedia.controllers;
 
 import com.socialmedia.models.Hashtag;
 import com.socialmedia.models.Post;
+import com.socialmedia.utils.*;
 import java.sql.*;
 
 import java.util.ArrayList;
@@ -66,11 +67,8 @@ public class PostController {
             dbController.rollback();
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            if (e.getMessage().contains("foreign key")) {
-                throw new IllegalStateException("User does not exist");
-            }
-            throw new RuntimeException("Database error while creating post: " + e.getMessage());
+            ErrorHandler.handleSQLException(e, dbController);
+            return false;
         }
     }
 
@@ -101,7 +99,7 @@ public class PostController {
                 posts.add(post);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return posts;
     }
@@ -144,8 +142,7 @@ public class PostController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -161,7 +158,7 @@ public class PostController {
                 return rs.getInt("LikeCount");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return 0;
     }
@@ -176,7 +173,7 @@ public class PostController {
 
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -192,7 +189,7 @@ public class PostController {
                 return rs.getInt("UserID");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return -1;
     }
@@ -220,7 +217,7 @@ public class PostController {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -235,8 +232,7 @@ public class PostController {
             dbController.commit();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -254,8 +250,7 @@ public class PostController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -308,8 +303,7 @@ public class PostController {
             dbController.rollback();
             return -1;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return -1;
         }
     }
@@ -329,8 +323,7 @@ public class PostController {
             
             dbController.commit();
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
     }
 
@@ -358,7 +351,7 @@ public class PostController {
                 posts.add(post);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return posts;
     }
@@ -395,7 +388,7 @@ public class PostController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
+            ErrorHandler.handleSQLException(e, dbController);
             throw new RuntimeException("Error sharing post: " + e.getMessage());
         }
     }
@@ -414,7 +407,6 @@ public class PostController {
 
     public boolean likePost(int userId, int postId) {
         try {
-            // Add like to database
             String sql = "INSERT INTO likes (UserID, PostID) VALUES (?, ?)";
             PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
             stmt.setInt(1, userId);
@@ -422,10 +414,8 @@ public class PostController {
             
             int result = stmt.executeUpdate();
             if (result > 0) {
-                // Get post owner's ID
                 int postOwnerId = getPostOwner(postId);
-                if (postOwnerId != userId) {  // Don't notify if user likes their own post
-                    // Create notification
+                if (postOwnerId != userId) {
                     String username = UserController.getInstance().getUserById(userId).getUsername();
                     NotificationController.getInstance().createNotification(
                         postOwnerId,
@@ -438,8 +428,7 @@ public class PostController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -470,8 +459,7 @@ public class PostController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }

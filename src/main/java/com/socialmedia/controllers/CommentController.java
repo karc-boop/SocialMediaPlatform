@@ -1,5 +1,6 @@
 package com.socialmedia.controllers;
 
+import com.socialmedia.utils.ErrorHandler;
 import com.socialmedia.models.Comment;
 import java.sql.*;
 import java.util.ArrayList;
@@ -32,7 +33,12 @@ public class CommentController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
+            try {
+                dbController.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
             return false;
         }
@@ -79,7 +85,12 @@ public class CommentController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
+            try {
+                dbController.rollback();
+            } catch (SQLException rollbackEx) {
+                System.err.println("Error during rollback: " + rollbackEx.getMessage());
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
             return false;
         }

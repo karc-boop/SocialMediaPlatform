@@ -2,6 +2,7 @@ package com.socialmedia.controllers;
 
 import com.socialmedia.models.Notification;
 import java.sql.*;
+import com.socialmedia.utils.ErrorHandler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,7 @@ public class NotificationController {
             stmt.executeUpdate();
             dbController.commit();
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
     }
 
@@ -68,8 +68,7 @@ public class NotificationController {
             stmt.executeUpdate();
             dbController.commit();
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
     }
 
@@ -81,8 +80,7 @@ public class NotificationController {
             stmt.executeUpdate();
             dbController.commit();
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
     }
 }

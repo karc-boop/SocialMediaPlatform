@@ -37,13 +37,9 @@ public class DatabaseController {
         }
     }
 
-    public void rollback() {
-        try {
-            if (conn != null && !conn.getAutoCommit()) {
-                conn.rollback();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void rollback() throws SQLException {
+        if (conn != null) {
+            conn.rollback();
         }
     }
 } 

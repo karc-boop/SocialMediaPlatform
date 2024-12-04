@@ -4,6 +4,7 @@ import com.socialmedia.models.Message;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import com.socialmedia.utils.ErrorHandler;
 
 public class MessageController {
     private final DatabaseController dbController;
@@ -40,9 +41,7 @@ public class MessageController {
             System.out.println("No rows affected, message not sent");
             return false;
         } catch (SQLException e) {
-            System.out.println("SQL Exception occurred: " + e.getMessage());
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -68,8 +67,8 @@ public class MessageController {
             }
             System.out.println("Found " + messages.size() + " messages");
         } catch (SQLException e) {
-            System.out.println("Error fetching messages: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
+            return new ArrayList<>();
         }
         return messages;
     }

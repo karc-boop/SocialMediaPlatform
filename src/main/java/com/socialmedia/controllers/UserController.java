@@ -4,6 +4,7 @@ import com.socialmedia.models.User;
 import com.socialmedia.models.UserSettings;
 import com.socialmedia.models.PrivacyLevel;
 import java.sql.*;
+import com.socialmedia.utils.ErrorHandler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class UserController {
             }
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -78,8 +79,7 @@ public class UserController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -126,7 +126,7 @@ public class UserController {
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return null;
         }
     }
@@ -163,8 +163,7 @@ public class UserController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -188,7 +187,7 @@ public class UserController {
             }
             return null;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return null;
         }
     }
@@ -209,7 +208,7 @@ public class UserController {
                 );
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return null;
     }
@@ -229,8 +228,7 @@ public class UserController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -258,8 +256,7 @@ public class UserController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -290,7 +287,7 @@ public class UserController {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return friends;
     }

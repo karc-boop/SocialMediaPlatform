@@ -2,6 +2,7 @@ package com.socialmedia.controllers;
 
 import com.socialmedia.models.User;
 import com.socialmedia.models.FriendRequest;
+import com.socialmedia.utils.ErrorHandler;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class FriendController {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return friends;
     }
@@ -61,8 +62,7 @@ public class FriendController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -81,8 +81,7 @@ public class FriendController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -100,7 +99,7 @@ public class FriendController {
             ResultSet rs = stmt.executeQuery();
             return rs.next();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -136,8 +135,7 @@ public class FriendController {
             }
             return false;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -179,8 +177,7 @@ public class FriendController {
             dbController.commit();
             return true;
         } catch (SQLException e) {
-            dbController.rollback();
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return false;
         }
     }
@@ -210,7 +207,7 @@ public class FriendController {
                 requests.add(request);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return requests;
     }
@@ -246,7 +243,7 @@ public class FriendController {
             }
             return 0;
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
             return 0;
         }
     }
@@ -276,7 +273,7 @@ public class FriendController {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleSQLException(e, dbController);
         }
         return friends;
     }

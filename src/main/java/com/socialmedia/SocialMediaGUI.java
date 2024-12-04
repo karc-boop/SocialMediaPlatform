@@ -3,6 +3,7 @@ package com.socialmedia;
 import com.socialmedia.controllers.*;
 import com.socialmedia.models.*;
 import com.socialmedia.ui.*;
+import com.socialmedia.utils.ErrorHandler;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
