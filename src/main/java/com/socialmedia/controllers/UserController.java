@@ -226,4 +226,33 @@ public class UserController {
             return false;
         }
     }
+
+    public boolean deleteAccount(int userId) {
+        try {
+            // Delete related friend requests
+            String deleteFriendRequestsSql = "DELETE FROM friend_requests WHERE SenderID = ? OR ReceiverID = ?";
+            PreparedStatement deleteFriendRequestsStmt = dbController.getConnection().prepareStatement(deleteFriendRequestsSql);
+            deleteFriendRequestsStmt.setInt(1, userId);
+            deleteFriendRequestsStmt.setInt(2, userId);
+            deleteFriendRequestsStmt.executeUpdate();
+
+            // Now delete the user
+            String deleteUserSql = "DELETE FROM users WHERE UserID = ?";
+            PreparedStatement deleteUserStmt = dbController.getConnection().prepareStatement(deleteUserSql);
+            deleteUserStmt.setInt(1, userId);
+            
+            int rowsAffected = deleteUserStmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                dbController.commit();
+                System.out.println("Account deleted successfully.");
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            dbController.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

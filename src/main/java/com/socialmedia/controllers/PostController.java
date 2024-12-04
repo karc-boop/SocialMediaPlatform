@@ -106,30 +106,41 @@ public class PostController {
         return posts;
     }
 
-    public boolean likePost(int postId, int userId) {
+    public boolean togglePostLike(int postId, int userId) {
         try {
-            dbController.getConnection().setAutoCommit(false);
-            
-            // First check if user already liked the post
+            // Check if like exists
             String checkSql = "SELECT LikeID FROM post_likes WHERE PostID = ? AND UserID = ?";
             PreparedStatement checkStmt = dbController.getConnection().prepareStatement(checkSql);
             checkStmt.setInt(1, postId);
             checkStmt.setInt(2, userId);
             ResultSet rs = checkStmt.executeQuery();
-            
+
             if (rs.next()) {
-                // User already liked this post
-                dbController.rollback();
-                return false;
+                // Unlike: remove existing like
+                String deleteSql = "DELETE FROM post_likes WHERE PostID = ? AND UserID = ?";
+                PreparedStatement deleteStmt = dbController.getConnection().prepareStatement(deleteSql);
+                deleteStmt.setInt(1, postId);
+                deleteStmt.setInt(2, userId);
+                deleteStmt.executeUpdate();
+            } else {
+                // Like: add new like
+                String insertSql = "INSERT INTO post_likes (PostID, UserID) VALUES (?, ?)";
+                PreparedStatement insertStmt = dbController.getConnection().prepareStatement(insertSql);
+                insertStmt.setInt(1, postId);
+                insertStmt.setInt(2, userId);
+                insertStmt.executeUpdate();
+
+                // Create notification for post owner
+                int postOwnerId = getPostOwner(postId);
+                if (postOwnerId != userId) { // Don't notify if user likes their own post
+                    NotificationController.getInstance().createNotification(
+                        postOwnerId,
+                        "Someone liked your post",
+                        "POST_LIKE"
+                    );
+                }
             }
 
-            // Add the like
-            String sql = "{CALL AddPostLike(?, ?)}";
-            CallableStatement stmt = dbController.getConnection().prepareCall(sql);
-            stmt.setInt(1, postId);
-            stmt.setInt(2, userId);
-
-            stmt.execute();
             dbController.commit();
             return true;
         } catch (SQLException e) {
@@ -137,6 +148,53 @@ public class PostController {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public int getPostLikeCount(int postId) {
+        try {
+            String sql = "SELECT COUNT(*) as LikeCount FROM post_likes WHERE PostID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            stmt.setInt(1, postId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("LikeCount");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean isPostLikedByUser(int postId, int userId) {
+        try {
+            String sql = "SELECT LikeID FROM post_likes WHERE PostID = ? AND UserID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            stmt.setInt(1, postId);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private int getPostOwner(int postId) {
+        try {
+            String sql = "SELECT UserID FROM posts WHERE PostID = ?";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            stmt.setInt(1, postId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt("UserID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public void updatePostLikeCount(Post post) throws SQLException {

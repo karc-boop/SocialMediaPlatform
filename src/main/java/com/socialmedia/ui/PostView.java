@@ -78,19 +78,11 @@ public class PostView extends VBox {
         likeCountLabel = new Label("Likes: " + post.getLikeCount());
         Button likeButton = new Button("Like");
         likeButton.setOnAction(e -> {
-            if (postController.likePost(post.getPostId(), userController.getCurrentUser().getUserId())) {
-                // Update like count immediately after successful like
-                try {
-                    postController.updatePostLikeCount(post);
-                    likeCountLabel.setText("Likes: " + post.getLikeCount());
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                        "Error", "Failed to update like count");
-                }
-            } else {
-                DialogFactory.showAlert(Alert.AlertType.WARNING, 
-                    "Warning", "You have already liked this post");
+            if (postController.togglePostLike(post.getPostId(), userController.getCurrentUser().getUserId())) {
+                boolean isNowLiked = postController.isPostLikedByUser(post.getPostId(), userController.getCurrentUser().getUserId());
+                likeButton.setText(isNowLiked ? "Unlike" : "Like");
+                int newLikeCount = postController.getPostLikeCount(post.getPostId());
+                likeCountLabel.setText(newLikeCount + " likes");
             }
         });
         

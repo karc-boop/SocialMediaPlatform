@@ -20,8 +20,9 @@ public class SocialMediaGUI extends Application {
     private final DatabaseController dbController = DatabaseController.getInstance();
     private final UserController userController = UserController.getInstance();
     private final PostController postController = PostController.getInstance();
-    private final CommentController commentController = CommentController.getInstance();
     private final FriendController friendController = FriendController.getInstance();
+
+    private User currentUser;  // Add at class level
 
     @Override
     public void start(Stage primaryStage) {
@@ -72,6 +73,7 @@ public class SocialMediaGUI extends Application {
         // Login button action
         loginButton.setOnAction(e -> {
             if (userController.login(usernameField.getText(), passwordField.getText())) {
+                currentUser = userController.getCurrentUser();  // Set current user
                 createMainScene();
                 primaryStage.setScene(mainScene);
             } else {
@@ -107,9 +109,10 @@ public class SocialMediaGUI extends Application {
         Tab friendsTab = new Tab("Friends", createFriendsTab());
         Tab messagesTab = new Tab("Messages", createMessagesTab());
         Tab notificationsTab = new Tab("Notifications", createNotificationsTab());
+        Tab accountManagementTab = createAccountManagementTab();
 
         // Prevent tabs from being closed
-        tabPane.getTabs().addAll(profileTab, postsTab, friendsTab, messagesTab, notificationsTab);
+        tabPane.getTabs().addAll(profileTab, postsTab, friendsTab, messagesTab, notificationsTab, accountManagementTab);
         tabPane.getTabs().forEach(tab -> tab.setClosable(false));
 
         // Logout button
@@ -374,7 +377,6 @@ public class SocialMediaGUI extends Application {
     }
 
     private void refreshMessages(ListView<String> messagesListView) {
-        // TODO: Implement MessageController and add message loading logic
         messagesListView.getItems().clear();
     }
 
@@ -517,6 +519,48 @@ public class SocialMediaGUI extends Application {
                 }
             }
         });
+    }
+
+    private Tab createAccountManagementTab() {
+        Tab accountManagementTab = new Tab("Account Management");
+        VBox accountManagementContent = new VBox(10);
+        accountManagementContent.setPadding(new Insets(10));
+
+        // Add Delete Account button
+        Button deleteAccountButton = new Button("Delete Account");
+        deleteAccountButton.setStyle("-fx-background-color: #ff4444; -fx-text-fill: white;");
+        
+        deleteAccountButton.setOnAction(e -> {
+            boolean confirm = DialogFactory.showConfirmation(
+                "Delete Account",
+                "Delete Account Confirmation",
+                "Are you sure you want to delete your account? This action cannot be undone."
+            );
+            
+            if (confirm) {
+                UserController userController = UserController.getInstance();
+                if (userController.deleteAccount(currentUser.getUserId())) {
+                    DialogFactory.showInformation(
+                        "Account Deleted",
+                        "Your account has been successfully deleted."
+                    );
+                    logout();  // Return to login screen
+                } else {
+                    DialogFactory.showError(
+                        "Error",
+                        "Failed to delete account. Please try again."
+                    );
+                }
+            }
+        });
+
+        accountManagementContent.getChildren().addAll(
+            new Separator(),
+            deleteAccountButton
+        );
+
+        accountManagementTab.setContent(accountManagementContent);
+        return accountManagementTab;
     }
 
     public static void main(String[] args) {
