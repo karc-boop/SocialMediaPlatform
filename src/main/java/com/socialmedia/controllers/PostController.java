@@ -411,4 +411,68 @@ public class PostController {
         }
         return 0;
     }
+
+    public boolean likePost(int userId, int postId) {
+        try {
+            // Add like to database
+            String sql = "INSERT INTO likes (UserID, PostID) VALUES (?, ?)";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            stmt.setInt(1, userId);
+            stmt.setInt(2, postId);
+            
+            int result = stmt.executeUpdate();
+            if (result > 0) {
+                // Get post owner's ID
+                int postOwnerId = getPostOwner(postId);
+                if (postOwnerId != userId) {  // Don't notify if user likes their own post
+                    // Create notification
+                    String username = UserController.getInstance().getUserById(userId).getUsername();
+                    NotificationController.getInstance().createNotification(
+                        postOwnerId,
+                        username + " liked your post",
+                        "LIKE"
+                    );
+                }
+                dbController.commit();
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            dbController.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addComment(int userId, int postId, String content) {
+        try {
+            String sql = "INSERT INTO comments (UserID, PostID, Content, Timestamp) VALUES (?, ?, ?, NOW())";
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(sql);
+            stmt.setInt(1, userId);
+            stmt.setInt(2, postId);
+            stmt.setString(3, content);
+            
+            int result = stmt.executeUpdate();
+            if (result > 0) {
+                // Get post owner's ID
+                int postOwnerId = getPostOwner(postId);
+                if (postOwnerId != userId) {  // Don't notify if user comments on their own post
+                    // Create notification
+                    String username = UserController.getInstance().getUserById(userId).getUsername();
+                    NotificationController.getInstance().createNotification(
+                        postOwnerId,
+                        username + " commented on your post",
+                        "COMMENT"
+                    );
+                }
+                dbController.commit();
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            dbController.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
 } 

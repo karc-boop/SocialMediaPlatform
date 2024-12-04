@@ -4,6 +4,8 @@ import com.socialmedia.models.User;
 import com.socialmedia.models.UserSettings;
 import com.socialmedia.models.PrivacyLevel;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserController {
     private final DatabaseController dbController;
@@ -220,8 +222,14 @@ public class UserController {
             stmt.setString(2, settings.getPrivacyLevel().name());
             stmt.setInt(3, settings.getUserId());
 
-            return stmt.executeUpdate() > 0;
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                dbController.commit();
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
+            dbController.rollback();
             e.printStackTrace();
             return false;
         }
@@ -254,5 +262,36 @@ public class UserController {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<User> getFriends(int userId) {
+        List<User> friends = new ArrayList<>();
+        try {
+            String query = "SELECT u.* FROM users u " +
+                          "JOIN friend_requests f ON (f.SenderID = u.UserID OR f.ReceiverID = u.UserID) " +
+                          "WHERE (f.SenderID = ? OR f.ReceiverID = ?) " +
+                          "AND u.UserID != ? " +
+                          "AND f.Status = 'ACCEPTED'";
+            
+            PreparedStatement stmt = dbController.getConnection().prepareStatement(query);
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+            stmt.setInt(3, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                friends.add(new User(
+                    rs.getInt("UserID"),
+                    rs.getString("Username"),
+                    rs.getString("Email"),
+                    rs.getString("Name"),
+                    rs.getString("Bio"),
+                    rs.getString("ProfilePicture")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return friends;
     }
 }

@@ -11,6 +11,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import java.util.List;
 
+
 public class SocialMediaGUI extends Application {
     private Stage primaryStage;
     private Scene loginScene;
@@ -107,15 +108,21 @@ public class SocialMediaGUI extends Application {
         Tab profileTab = new Tab("Profile", createProfileTab());
         Tab postsTab = new Tab("Posts", createPostsTab());
         Tab friendsTab = new Tab("Friends", createFriendsTab());
-        Tab messagesTab = new Tab("Messages", createMessagesTab());
+        
+        // For Messages tab
+        Tab messagesTab = new Tab("Messages");
+        messagesTab.setContent(createMessagesContent());
+        
         Tab notificationsTab = new Tab("Notifications", createNotificationsTab());
-        Tab accountManagementTab = createAccountManagementTab();
+        
+        // For Account Management tab
+        Tab accountManagementTab = new Tab("Account Management");
+        accountManagementTab.setContent(createAccountManagementContent());
 
-        // Prevent tabs from being closed
+        // Rest of the code remains the same
         tabPane.getTabs().addAll(profileTab, postsTab, friendsTab, messagesTab, notificationsTab, accountManagementTab);
         tabPane.getTabs().forEach(tab -> tab.setClosable(false));
 
-        // Logout button
         Button logoutButton = new Button("Logout");
         logoutButton.setOnAction(e -> logout());
 
@@ -324,60 +331,115 @@ public class SocialMediaGUI extends Application {
         return friendsLayout;
     }
 
-    private VBox createMessagesTab() {
-        VBox messagesLayout = new VBox(10);
-        messagesLayout.setPadding(new Insets(10));
+    private VBox createMessagesContent() {
+        VBox messagesContent = new VBox(10);
+        messagesContent.setPadding(new Insets(10));
 
-        // Messages list
-        ListView<String> messagesListView = new ListView<>();
-        
-        // Send message section
-        TextField recipientField = new TextField();
-        recipientField.setPromptText("Recipient username");
-        
+        // Message composition area
+        ComboBox<String> recipientComboBox = new ComboBox<>();
         TextArea messageContent = new TextArea();
-        messageContent.setPromptText("Type your message");
+        messageContent.setPromptText("Type your message here...");
         messageContent.setPrefRowCount(3);
         
         Button sendButton = new Button("Send Message");
+        
+        // Load recipients (all users except current user)
+        UserController userController = UserController.getInstance();
+        List<User> friends = userController.getFriends(currentUser.getUserId());
+        for (User friend : friends) {
+            recipientComboBox.getItems().add(friend.getUsername());
+        }
+
+        // Message sending action
         sendButton.setOnAction(e -> {
-            String recipient = recipientField.getText().trim();
-            String content = messageContent.getText().trim();
+            String recipientName = recipientComboBox.getValue();
+            String content = messageContent.getText();
             
-            if (!recipient.isEmpty() && !content.isEmpty()) {
-                User recipientUser = userController.getUserByUsername(recipient);
-                if (recipientUser != null) {
-                    // TODO: Implement MessageController and add message sending logic
+            if (recipientName != null && !content.trim().isEmpty()) {
+                User recipient = userController.getUserByUsername(recipientName);
+                MessageController messageController = MessageController.getInstance();
+                
+                if (messageController.sendMessage(currentUser.getUserId(), recipient.getUserId(), content)) {
                     messageContent.clear();
-                    recipientField.clear();
-                    refreshMessages(messagesListView);
+                    refreshMessages();  // Refresh the message list
+                    DialogFactory.showInformation("Success", "Message sent successfully!");
                 } else {
-                    DialogFactory.showAlert(Alert.AlertType.ERROR, 
-                        "Error", "Recipient not found!");
+                    DialogFactory.showError("Error", "Failed to send message.");
                 }
+            } else {
+                DialogFactory.showError("Error", "Please select a recipient and enter a message.");
             }
         });
 
-        Button refreshButton = new Button("Refresh Messages");
-        refreshButton.setOnAction(e -> refreshMessages(messagesListView));
+        // Message display area
+        VBox messageList = new VBox(5);
+        ScrollPane scrollPane = new ScrollPane(messageList);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(300);
 
-        messagesLayout.getChildren().addAll(
-            new Label("Send New Message"),
-            recipientField,
+        // Refresh button
+        Button refreshButton = new Button("Refresh Messages");
+        refreshButton.setOnAction(e -> refreshMessages());
+
+        // Add all components
+        messagesContent.getChildren().addAll(
+            new Label("Select Recipient:"),
+            recipientComboBox,
+            new Label("Message:"),
             messageContent,
             sendButton,
-            new Separator(),
-            new Label("Messages"),
-            messagesListView,
-            refreshButton
+            refreshButton,
+            new Label("Messages:"),
+            scrollPane
         );
 
-        refreshMessages(messagesListView);
-        return messagesLayout;
+        return messagesContent;
     }
 
-    private void refreshMessages(ListView<String> messagesListView) {
-        messagesListView.getItems().clear();
+    private void refreshMessages() {
+        MessageController messageController = MessageController.getInstance();
+        List<Message> messages = messageController.getMessages(currentUser.getUserId());
+        
+        VBox messageList = new VBox(5);
+        UserController userController = UserController.getInstance();
+
+        for (Message message : messages) {
+            String senderName = userController.getUserById(message.getSenderId()).getUsername();
+            String receiverName = userController.getUserById(message.getReceiverId()).getUsername();
+            
+            VBox messageBox = new VBox(2);
+            messageBox.setStyle("-fx-padding: 5; -fx-border-color: #cccccc; -fx-border-radius: 5;");
+            
+            Label headerLabel = new Label(String.format("From: %s To: %s", senderName, receiverName));
+            headerLabel.setStyle("-fx-font-weight: bold;");
+            
+            messageBox.getChildren().addAll(
+                headerLabel,
+                new Label(message.getContent()),
+                new Label("Sent: " + message.getTimestamp().toString())
+            );
+            
+            messageList.getChildren().add(messageBox);
+        }
+
+        // Find the ScrollPane in the messages tab and update its content
+        Tab messagesTab = findTab("Messages");
+        if (messagesTab != null) {
+            VBox content = (VBox) messagesTab.getContent();
+            ScrollPane scrollPane = (ScrollPane) content.getChildren().get(7); // Adjust index if needed
+            scrollPane.setContent(messageList);
+        }
+    }
+
+    private Tab findTab(String tabName) {
+        VBox root = (VBox) mainScene.getRoot();
+        TabPane tabPane = (TabPane) root.getChildren().get(0);
+        for (Tab tab : tabPane.getTabs()) {
+            if (tab.getText().equals(tabName)) {
+                return tab;
+            }
+        }
+        return null;
     }
 
     private VBox createNotificationsTab() {
@@ -521,8 +583,7 @@ public class SocialMediaGUI extends Application {
         });
     }
 
-    private Tab createAccountManagementTab() {
-        Tab accountManagementTab = new Tab("Account Management");
+    private VBox createAccountManagementContent() {
         VBox accountManagementContent = new VBox(10);
         accountManagementContent.setPadding(new Insets(10));
 
@@ -559,8 +620,7 @@ public class SocialMediaGUI extends Application {
             deleteAccountButton
         );
 
-        accountManagementTab.setContent(accountManagementContent);
-        return accountManagementTab;
+        return accountManagementContent;
     }
 
     public static void main(String[] args) {
