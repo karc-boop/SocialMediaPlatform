@@ -14,10 +14,22 @@ public class UserSettings {
     }
 
     // Getters and setters
-    public int getSettingId() { return settingId; }
-    public int getUserId() { return userId; }
-    public boolean isNotificationsEnabled() { return notificationsEnabled; }
-    public PrivacyLevel getPrivacyLevel() { return privacyLevel; }
-    public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
-    public void setPrivacyLevel(PrivacyLevel privacyLevel) { this.privacyLevel = privacyLevel; }
+    public int getSettingId() { 
+        return settingId; 
+    }
+    public int getUserId() { 
+        return userId; 
+    }
+    public boolean isNotificationsEnabled() { 
+        return notificationsEnabled; 
+    }
+    public PrivacyLevel getPrivacyLevel() { 
+        return privacyLevel; 
+    }
+    public void setNotificationsEnabled(boolean notificationsEnabled) { 
+        this.notificationsEnabled = notificationsEnabled; 
+    }
+    public void setPrivacyLevel(PrivacyLevel privacyLevel) { 
+        this.privacyLevel = privacyLevel; 
+    }
 } 

@@ -5,7 +5,6 @@ import com.socialmedia.models.Notification;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import java.time.format.DateTimeFormatter;
 
 public class NotificationCell extends ListCell<Notification> {

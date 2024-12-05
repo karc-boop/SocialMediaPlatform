@@ -58,14 +58,11 @@ public class MessageController {
 
             while (rs.next()) {
                 messages.add(new Message(
-                    rs.getInt("MessageID"),
-                    rs.getInt("SenderID"),
-                    rs.getInt("ReceiverID"),
-                    rs.getString("Content"),
+                    rs.getInt("MessageID"),rs.getInt("SenderID"),
+                    rs.getInt("ReceiverID"),rs.getString("Content"),
                     rs.getTimestamp("Timestamp")
                 ));
             }
-            System.out.println("Found " + messages.size() + " messages");
         } catch (SQLException e) {
             ErrorHandler.handleSQLException(e, dbController);
             return new ArrayList<>();

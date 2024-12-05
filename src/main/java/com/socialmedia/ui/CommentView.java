@@ -4,7 +4,6 @@ import com.socialmedia.models.Comment;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.*;
-import javafx.geometry.Insets;
 
 public class CommentView extends VBox {
     private Comment comment;
@@ -19,7 +18,6 @@ public class CommentView extends VBox {
     private void setupUI(String currentUsername, String authorUsername) {
         setStyle("-fx-background-color: #f8f8f8; -fx-padding: 5;");
         
-        // Header with username and delete button
         HBox header = new HBox(10);
         Label authorLabel = new Label(authorUsername);
         authorLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 0.9em;");

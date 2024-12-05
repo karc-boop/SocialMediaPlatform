@@ -19,12 +19,24 @@ public class Message {
     }
 
     // Getters
-    public int getMessageId() { return messageId; }
-    public int getSenderId() { return senderId; }
-    public int getReceiverId() { return receiverId; }
-    public String getContent() { return content; }
-    public Timestamp getTimestamp() { return timestamp; }
-    public String getSenderUsername() { return senderUsername; }
+    public int getMessageId() { 
+        return messageId; 
+    }
+    public int getSenderId() { 
+        return senderId; 
+    }
+    public int getReceiverId() { 
+        return receiverId; 
+    }
+    public String getContent() { 
+        return content; 
+    }
+    public Timestamp getTimestamp() { 
+        return timestamp; 
+    }
+    public String getSenderUsername() { 
+        return senderUsername; 
+    }
 
     // Setter for sender username
     public void setSenderUsername(String senderUsername) {

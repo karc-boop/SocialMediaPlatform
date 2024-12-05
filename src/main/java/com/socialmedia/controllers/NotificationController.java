@@ -46,12 +46,8 @@ public class NotificationController {
 
             while (rs.next()) {
                 notifications.add(new Notification(
-                    rs.getInt("NotificationID"),
-                    rs.getInt("UserID"),
-                    rs.getString("Message"),
-                    rs.getString("Type"),
-                    rs.getBoolean("IsRead"),
-                    rs.getTimestamp("Timestamp")
+                    rs.getInt("NotificationID"), rs.getInt("UserID"),
+                    rs.getString("Message"),rs.getString("Type"), rs.getBoolean("IsRead"),rs.getTimestamp("Timestamp")
                 ));
             }
         } catch (SQLException e) {

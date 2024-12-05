@@ -106,7 +106,6 @@ public class FriendController {
 
     public boolean sendFriendRequest(int senderId, int receiverId) {
         try {
-            // Check if a request already exists
             String checkSql = "SELECT * FROM friend_requests WHERE " +
                     "(SenderID = ? AND ReceiverID = ? AND Status = 'PENDING') OR " +
                     "(SenderID = ? AND ReceiverID = ? AND Status = 'PENDING')";
@@ -166,7 +165,7 @@ public class FriendController {
             updateStmt.executeUpdate();
 
             if (accept) {
-                // Add friendship
+                // Add a friend
                 String addFriendSql = "INSERT INTO friendships (UserID1, UserID2) VALUES (?, ?)";
                 PreparedStatement addFriendStmt = dbController.getConnection().prepareStatement(addFriendSql);
                 addFriendStmt.setInt(1, Math.min(senderId, receiverId));

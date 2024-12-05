@@ -20,12 +20,24 @@ public class Notification {
     }
 
     // Getters
-    public int getNotificationId() { return notificationId; }
-    public int getUserId() { return userId; }
-    public String getMessage() { return message; }
-    public String getType() { return type; }
-    public boolean isRead() { return isRead; }
-    public Timestamp getTimestamp() { return timestamp; }
+    public int getNotificationId() { 
+        return notificationId; 
+    }
+    public int getUserId() { 
+        return userId; 
+    }
+    public String getMessage() { 
+        return message; 
+    }
+    public String getType() { 
+        return type; 
+    }
+    public boolean isRead() { 
+        return isRead; 
+    }
+    public Timestamp getTimestamp() { 
+        return timestamp; 
+    }
 
     // Setters
     public void setRead(boolean read) { isRead = read; }

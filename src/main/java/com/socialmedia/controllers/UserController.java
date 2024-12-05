@@ -131,6 +131,8 @@ public class UserController {
         }
     }
 
+    // two scenarios: update password or not:
+    // if the user leave the password field empty, keep the original password.
     public boolean updateProfile(int userId, String email, String password, String name, String bio, String profilePicture) {
         try {
             String sql;
@@ -235,14 +237,14 @@ public class UserController {
 
     public boolean deleteAccount(int userId) {
         try {
-            // Delete related friend requests
+            // first delete related friend requests
             String deleteFriendRequestsSql = "DELETE FROM friend_requests WHERE SenderID = ? OR ReceiverID = ?";
             PreparedStatement deleteFriendRequestsStmt = dbController.getConnection().prepareStatement(deleteFriendRequestsSql);
             deleteFriendRequestsStmt.setInt(1, userId);
             deleteFriendRequestsStmt.setInt(2, userId);
             deleteFriendRequestsStmt.executeUpdate();
 
-            // Now delete the user
+            // then delete the user
             String deleteUserSql = "DELETE FROM users WHERE UserID = ?";
             PreparedStatement deleteUserStmt = dbController.getConnection().prepareStatement(deleteUserSql);
             deleteUserStmt.setInt(1, userId);

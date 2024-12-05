@@ -18,10 +18,18 @@ public class Post {
     }
 
     // Getters and setters
-    public int getPostId() { return postId; }
-    public int getUserId() { return userId; }
-    public String getContent() { return content; }
-    public Timestamp getTimestamp() { return timestamp; }
+    public int getPostId() { 
+        return postId; 
+    }
+    public int getUserId() { 
+        return userId; 
+    }
+    public String getContent() { 
+        return content; 
+    }
+    public Timestamp getTimestamp() { 
+        return timestamp; 
+    }
     public int getLikeCount() { return likeCount; }
     public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
     public void setContent(String content) {

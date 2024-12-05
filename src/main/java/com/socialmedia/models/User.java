@@ -19,10 +19,22 @@ public class User {
     }
 
     // Getters and setters
-    public int getUserId() { return userId; }
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public String getName() { return name; }
-    public String getBio() { return bio; }
-    public String getProfilePicture() { return profilePicture; }
+    public int getUserId() { 
+        return userId; 
+    }
+    public String getUsername() { 
+        return username; 
+    }
+    public String getEmail() { 
+        return email; 
+    }
+    public String getName() { 
+        return name; 
+    }
+    public String getBio() { 
+        return bio; 
+    }
+    public String getProfilePicture() { 
+        return profilePicture; 
+    }
 } 

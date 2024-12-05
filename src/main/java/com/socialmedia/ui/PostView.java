@@ -31,7 +31,7 @@ public class PostView extends VBox {
         setSpacing(8);
         
         // Create header box for username and timestamp
-        HBox headerBox = new HBox(10); // 10 pixels spacing between elements
+        HBox headerBox = new HBox(10); 
         
         String username = userController.getUserById(post.getUserId()).getUsername();
         Label authorLabel = new Label("From: " + username);

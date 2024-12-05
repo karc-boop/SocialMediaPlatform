@@ -5,7 +5,6 @@ import com.socialmedia.controllers.FriendController;
 import com.socialmedia.controllers.UserController;
 import javafx.scene.control.ListCell;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.HBox;
 import javafx.scene.control.Label;
 import javafx.geometry.Insets;
 

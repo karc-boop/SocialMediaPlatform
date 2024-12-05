@@ -19,9 +19,19 @@ public class Comment {
     }
 
     // Getters and setters
-    public int getCommentId() { return commentId; }
-    public int getPostId() { return postId; }
-    public int getUserId() { return userId; }
-    public String getContent() { return content; }
-    public Timestamp getTimestamp() { return timestamp; }
+    public int getCommentId() { 
+        return commentId; 
+    }
+    public int getPostId() { 
+        return postId; 
+    }
+    public int getUserId() { 
+        return userId; 
+    }
+    public String getContent() { 
+        return content; 
+    }
+    public Timestamp getTimestamp() { 
+        return timestamp; 
+    }
 } 

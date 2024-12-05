@@ -2,9 +2,9 @@ package com.socialmedia.controllers;
 
 import com.socialmedia.models.Hashtag;
 import com.socialmedia.models.Post;
-import com.socialmedia.utils.*;
-import java.sql.*;
+import com.socialmedia.utils.ErrorHandler;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -29,7 +29,7 @@ public class PostController {
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Post content cannot be empty");
         }
-        if (content.length() > 1000) {  // Example character limit
+        if (content.length() > 1000) {  // post length limit
             throw new IllegalArgumentException("Post content exceeds 1000 characters");
         }
         
@@ -72,9 +72,11 @@ public class PostController {
         }
     }
 
+
     public List<Post> loadPosts(int currentUserId) {
         List<Post> posts = new ArrayList<>();
         try {
+            // load posts from friends and current user
             String query = "SELECT p.PostID, p.UserID, p.Content, p.Timestamp " +
                     "FROM posts p " +
                     "LEFT JOIN friendships f ON (f.UserID1 = ? AND f.UserID2 = p.UserID) " +
@@ -90,9 +92,7 @@ public class PostController {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Post post = new Post(
-                    rs.getInt("PostID"),
-                    rs.getInt("UserID"),
-                    rs.getString("Content"),
+                    rs.getInt("PostID"),rs.getInt("UserID"),rs.getString("Content"),
                     rs.getTimestamp("Timestamp")
                 );
                 updatePostLikeCount(post);
@@ -244,7 +244,7 @@ public class PostController {
             stmt.setInt(1, postId);
             stmt.setString(2, content);
             stmt.setString(3, "text");  // Default to text type
-            stmt.setString(4, null);    // No media URL
+            stmt.setString(4, null);    // default no media URL
 
             stmt.execute();
             dbController.commit();
